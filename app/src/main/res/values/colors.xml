@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    
+    <!-- StraightUP Theme Colors -->
+    <color name="background">#F5F5F5</color>
+    <color name="primary_text">#212121</color>
+    <color name="secondary_text">#757575</color>
+    <color name="button_off">#E0E0E0</color>
+    <color name="button_on">#4CAF50</color>
+    <color name="button_stroke">#BDBDBD</color>
+    <color name="button_stroke_on">#388E3C</color>
+</resources>
