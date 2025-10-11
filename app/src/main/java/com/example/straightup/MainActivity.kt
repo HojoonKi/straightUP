@@ -4,15 +4,17 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.Build
+import android.os.PowerManager
+import android.provider.Settings
+import android.net.Uri
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
-import androidx.lifecycle.lifecycleScope
 import com.example.straightup.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
     
@@ -29,7 +31,7 @@ class MainActivity : AppCompatActivity() {
         if (allGranted) {
             startMonitoring()
         } else {
-            Toast.makeText(this, "권한이 필요합니다", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "권한이 필요합니다.", Toast.LENGTH_SHORT).show()
         }
     }
     
@@ -37,11 +39,27 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        
+
+//        checkBatteryOptimization()
         setupUI()
-        observePostureScore()
+//        observePostureScore()
     }
-    
+
+    private fun checkBatteryOptimization() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val pm = getSystemService(PowerManager::class.java)
+            val packageName = packageName
+
+            if (pm != null && !pm.isIgnoringBatteryOptimizations(packageName)) {
+                val intent = Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+                intent.data = Uri.parse("package:$packageName")
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK
+                startActivity(intent)
+                Toast.makeText(this, "배터리 최적화 예외를 허용해주세요.", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     private fun setupUI() {
         binding.toggleButton.setOnClickListener {
             if (isMonitoring) {
@@ -56,29 +74,13 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    private fun observePostureScore() {
-        lifecycleScope.launch {
-            postureScore.collect { score ->
-                binding.postureScoreText.text = "$score / 100"
-            }
-        }
-    }
-    
-    private fun checkPermissionsAndStart() {
-        val permissions = mutableListOf(
-            Manifest.permission.CAMERA
-        )
-        
-        val permissionsToRequest = permissions.filter {
-            ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
-        }
-        
-        if (permissionsToRequest.isEmpty()) {
-            startMonitoring()
-        } else {
-            requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
-        }
-    }
+//    private fun observePostureScore() {
+//        lifecycleScope.launch {
+//            postureScore.collect { score ->
+//                binding.postureScoreText.text = "$score / 100"
+//            }
+//        }
+//    }
     
     private fun startMonitoring() {
         isMonitoring = true
@@ -120,29 +122,36 @@ class MainActivity : AppCompatActivity() {
         }
     }
     
-    // Method to update posture score from service
-    fun updatePostureScore(score: Int) {
-        _postureScore.value = score
+    private fun startCameraPreview() {
+        val intent = Intent(this, CameraPreviewActivity::class.java)
+        startActivity(intent)
     }
-    
-    private fun checkPermissionsAndStartCameraPreview() {
+
+    private fun checkCameraPermission(onGranted: () -> Unit) {
         val permissions = mutableListOf(
             Manifest.permission.CAMERA
         )
-        
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            permissions.add(Manifest.permission.POST_NOTIFICATIONS)
+        }
+
         val permissionsToRequest = permissions.filter {
             ContextCompat.checkSelfPermission(this, it) != PackageManager.PERMISSION_GRANTED
         }
-        
+
         if (permissionsToRequest.isEmpty()) {
-            startCameraPreview()
+            onGranted()
         } else {
             requestPermissionLauncher.launch(permissionsToRequest.toTypedArray())
         }
     }
-    
-    private fun startCameraPreview() {
-        val intent = Intent(this, CameraPreviewActivity::class.java)
-        startActivity(intent)
+
+    private fun checkPermissionsAndStart() {
+        checkCameraPermission { startMonitoring() }
+    }
+
+    private fun checkPermissionsAndStartCameraPreview() {
+        checkCameraPermission { startCameraPreview() }
     }
 }

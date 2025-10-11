@@ -48,22 +48,15 @@ class TiltSensorMonitor(
     }
     
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not needed for this implementation
     }
     
     private fun calculateTiltAngle(gravity: FloatArray): Float {
-        // Calculate pitch (forward/backward tilt)
-        // This represents how much the phone is tilted forward
         val normOfG = sqrt(gravity[0] * gravity[0] + gravity[1] * gravity[1] + gravity[2] * gravity[2])
-        
-        // Pitch angle in degrees (0° = vertical, 90° = horizontal face-up)
+
         val pitch = Math.toDegrees(
             atan2(gravity[1].toDouble(), sqrt(gravity[0] * gravity[0] + gravity[2] * gravity[2].toDouble()))
         ).toFloat()
-        
-        // Return absolute pitch value
-        // Lower values (0-30°) = good posture (phone held up)
-        // Higher values (60-90°) = bad posture (phone held down, causing text neck)
+
         return Math.abs(pitch)
     }
 }
