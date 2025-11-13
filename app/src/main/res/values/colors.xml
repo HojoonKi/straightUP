@@ -1,14 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Base Colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     
-    <!-- StraightUP Theme Colors -->
-    <color name="background">#F5F5F5</color>
-    <color name="primary_text">#212121</color>
-    <color name="secondary_text">#757575</color>
-    <color name="button_off">#E0E0E0</color>
-    <color name="button_on">#4CAF50</color>
-    <color name="button_stroke">#BDBDBD</color>
-    <color name="button_stroke_on">#388E3C</color>
+    <!-- Background Colors - Gray Minimalism -->
+    <color name="background_primary">#F8F9FA</color>
+    <color name="background_secondary">#FFFFFF</color>
+    <color name="background_dark">#1A1A1A</color>
+    <color name="background_overlay">#CC000000</color>
+    
+    <!-- Text Colors -->
+    <color name="text_primary">#1A1A1A</color>
+    <color name="text_secondary">#666666</color>
+    <color name="text_tertiary">#999999</color>
+    <color name="text_on_dark">#FFFFFF</color>
+    <color name="text_on_dark_secondary">#CCCCCC</color>
+    
+    <!-- Card & Surface -->
+    <color name="card_background">#FFFFFF</color>
+    <color name="card_border">#E0E0E0</color>
+    <color name="divider">#EEEEEE</color>
+    
+    <!-- Button Colors -->
+    <color name="button_off">#E8E8E8</color>
+    <color name="button_off_text">#666666</color>
+    <color name="button_on">#4A5568</color>
+    <color name="button_on_text">#FFFFFF</color>
+    <color name="button_stroke">#D0D0D0</color>
+    <color name="button_stroke_on">#2D3748</color>
+    
+    <!-- Status Colors - Muted Tones -->
+    <color name="status_excellent">#5FA777</color>
+    <color name="status_good">#6CB593</color>
+    <color name="status_warning">#E09F5F</color>
+    <color name="status_danger">#D47A6F</color>
+    
+    <!-- Accent Colors for Calibration -->
+    <color name="accent_green">#5FA777</color>
+    <color name="accent_green_dark">#4A8A60</color>
+    <color name="accent_orange">#E09F5F</color>
+    <color name="accent_orange_dark">#C88A4F</color>
+    <color name="accent_blue">#6B9FBF</color>
+    <color name="accent_blue_dark">#5A88A8</color>
+    
+    <!-- Interactive States -->
+    <color name="ripple_light">#1A000000</color>
+    <color name="ripple_dark">#33FFFFFF</color>
 </resources>

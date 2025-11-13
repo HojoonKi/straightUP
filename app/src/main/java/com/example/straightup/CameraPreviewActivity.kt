@@ -1,10 +1,12 @@
 package com.example.straightup
 
+import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
@@ -30,6 +32,20 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
     private var currentDistance = 0f
     private var currentTiltAngle = 0f
     
+    // Calibration data
+    private var goodPostureDistance: Float? = null
+    private var goodPostureTilt: Float? = null
+    private var badPostureDistance: Float? = null
+    private var badPostureTilt: Float? = null
+    
+    companion object {
+        private const val PREFS_NAME = "PostureCalibration"
+        private const val KEY_GOOD_DISTANCE = "good_posture_distance"
+        private const val KEY_GOOD_TILT = "good_posture_tilt"
+        private const val KEY_BAD_DISTANCE = "bad_posture_distance"
+        private const val KEY_BAD_TILT = "bad_posture_tilt"
+    }
+    
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityCameraPreviewBinding.inflate(layoutInflater)
@@ -49,6 +65,74 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
         binding.closeButton.setOnClickListener {
             finish()
         }
+        
+        binding.captureGoodPostureButton.setOnClickListener {
+            captureGoodPosture()
+        }
+        
+        binding.captureBadPostureButton.setOnClickListener {
+            captureBadPosture()
+        }
+        
+        binding.completeButton.setOnClickListener {
+            completeCalibration()
+        }
+    }
+    
+    private fun captureGoodPosture() {
+        if (currentDistance <= 0f) {
+            Toast.makeText(this, "얼굴이 감지되지 않았습니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        goodPostureDistance = currentDistance
+        goodPostureTilt = currentTiltAngle
+        
+        binding.goodPostureStatus.text = "✓ 저장됨: 거리 ${String.format("%.2f", currentDistance)}, 기울기 ${currentTiltAngle.toInt()}°"
+        binding.goodPostureStatus.alpha = 1.0f
+        
+        Toast.makeText(this, "건강한 자세가 저장되었습니다", Toast.LENGTH_SHORT).show()
+        checkCalibrationComplete()
+    }
+    
+    private fun captureBadPosture() {
+        if (currentDistance <= 0f) {
+            Toast.makeText(this, "얼굴이 감지되지 않았습니다", Toast.LENGTH_SHORT).show()
+            return
+        }
+        
+        badPostureDistance = currentDistance
+        badPostureTilt = currentTiltAngle
+        
+        binding.badPostureStatus.text = "✓ 저장됨: 거리 ${String.format("%.2f", currentDistance)}, 기울기 ${currentTiltAngle.toInt()}°"
+        binding.badPostureStatus.alpha = 1.0f
+        
+        Toast.makeText(this, "스트레스 자세가 저장되었습니다", Toast.LENGTH_SHORT).show()
+        checkCalibrationComplete()
+    }
+    
+    private fun checkCalibrationComplete() {
+        if (goodPostureDistance != null && goodPostureTilt != null &&
+            badPostureDistance != null && badPostureTilt != null) {
+            binding.completeButton.isEnabled = true
+        }
+    }
+    
+    private fun completeCalibration() {
+        // Save to SharedPreferences
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        prefs.edit().apply {
+            putFloat(KEY_GOOD_DISTANCE, goodPostureDistance ?: 0f)
+            putFloat(KEY_GOOD_TILT, goodPostureTilt ?: 0f)
+            putFloat(KEY_BAD_DISTANCE, badPostureDistance ?: 0f)
+            putFloat(KEY_BAD_TILT, badPostureTilt ?: 0f)
+            apply()
+        }
+        
+        Toast.makeText(this, "설정이 완료되었습니다!\n개인 맞춤 자세 범위가 저장되었습니다", Toast.LENGTH_LONG).show()
+        
+        // Return to previous activity
+        finish()
     }
     
     private fun startCamera() {
@@ -99,33 +183,8 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
     }
     
     private fun updateDistanceUI(distance: Float) {
-        val distanceCategory = when {
-            distance < 0.4f -> {
-                binding.distanceText.text = "너무 가까움"
-                binding.distanceDescription.text = "휴대폰을 더 멀리 떨어뜨리세요"
-                binding.distanceText.setTextColor(getColor(android.R.color.holo_red_light))
-            }
-            distance in 0.4f..0.6f -> {
-                binding.distanceText.text = "약간 가까움"
-                binding.distanceDescription.text = "조금 더 떨어뜨리면 좋습니다"
-                binding.distanceText.setTextColor(getColor(android.R.color.holo_orange_light))
-            }
-            distance in 0.6f..1.0f -> {
-                binding.distanceText.text = "적정 거리 ✓"
-                binding.distanceDescription.text = "완벽한 거리입니다!"
-                binding.distanceText.setTextColor(getColor(android.R.color.holo_green_light))
-            }
-            distance in 1.0f..1.3f -> {
-                binding.distanceText.text = "약간 멀음"
-                binding.distanceDescription.text = "조금 더 가까이 해도 됩니다"
-                binding.distanceText.setTextColor(getColor(android.R.color.holo_orange_light))
-            }
-            else -> {
-                binding.distanceText.text = "너무 멀음"
-                binding.distanceDescription.text = "휴대폰을 가까이 가져오세요"
-                binding.distanceText.setTextColor(getColor(android.R.color.holo_red_light))
-            }
-        }
+        binding.distanceText.text = String.format("%.2f", distance)
+        binding.distanceText.setTextColor(getColor(android.R.color.white))
     }
     
     override fun onResume() {
@@ -162,19 +221,7 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
                 
                 runOnUiThread {
                     binding.tiltAngleText.text = "${currentTiltAngle.toInt()}°"
-                    
-                    // 기울기: 0도에 가까울수록 빨간색 (거북목), 클수록 초록색 (좋은 자세)
-                    when {
-                        currentTiltAngle < 30 -> {
-                            binding.tiltAngleText.setTextColor(getColor(android.R.color.holo_red_light))
-                        }
-                        currentTiltAngle < 60 -> {
-                            binding.tiltAngleText.setTextColor(getColor(android.R.color.holo_orange_light))
-                        }
-                        else -> {
-                            binding.tiltAngleText.setTextColor(getColor(android.R.color.holo_green_light))
-                        }
-                    }
+                    binding.tiltAngleText.setTextColor(getColor(android.R.color.white))
                 }
             }
         }

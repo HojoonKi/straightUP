@@ -4,7 +4,8 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/black">
+    android:background="@color/background_dark"
+    android:fitsSystemWindows="true">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
@@ -15,92 +16,237 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <ImageButton
-        android:id="@+id/closeButton"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="닫기"
-        android:src="@android:drawable/ic_menu_close_clear_cancel"
-        android:tint="@color/white"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
     <androidx.cardview.widget.CardView
-        android:id="@+id/distanceCard"
+        android:id="@+id/infoCard"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="8dp"
-        app:cardBackgroundColor="#CC000000"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:cardBackgroundColor="@color/background_overlay"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="40dp">
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="12dp"
+            android:paddingEnd="52dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="초기 설정"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/text_on_dark"
+                android:letterSpacing="0.02" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="개인 맞춤 자세 범위를 설정합니다"
+                android:textSize="11sp"
+                android:textColor="@color/text_on_dark_secondary"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/closeButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_gravity="end|center_vertical"
+            android:layout_marginEnd="4dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="닫기"
+            android:src="@android:drawable/ic_menu_close_clear_cancel"
+            android:tint="@color/text_on_dark" />
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/measurementCard"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:cardBackgroundColor="@color/background_overlay"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/calibrationCard"
+        app:layout_constraintTop_toTopOf="@id/calibrationCard"
+        app:layout_constraintWidth_percent="0.28">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="12dp"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/distanceLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="얼굴과의 거리"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:alpha="0.8" />
+                android:text="측정값"
+                android:textSize="11sp"
+                android:textColor="@color/text_on_dark_secondary"
+                android:letterSpacing="0.03" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:layout_marginTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="거리"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_on_dark_secondary"
+                    android:letterSpacing="0.05" />
+
+                <TextView
+                    android:id="@+id/distanceText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="측정 중..."
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_dark"
+                    android:layout_marginTop="4dp" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="@color/text_on_dark_secondary"
+                    android:alpha="0.3"
+                    android:layout_marginVertical="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="기울기"
+                    android:textSize="10sp"
+                    android:textColor="@color/text_on_dark_secondary"
+                    android:letterSpacing="0.05" />
+
+                <TextView
+                    android:id="@+id/tiltAngleText"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="--°"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_on_dark"
+                    android:layout_marginTop="4dp" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/calibrationCard"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="3dp"
+        app:cardBackgroundColor="@color/background_overlay"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_percent="0.58">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
 
             <TextView
-                android:id="@+id/distanceText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="측정 중..."
-                android:textSize="32sp"
+                android:text="자세 측정"
+                android:textSize="12sp"
                 android:textStyle="bold"
+                android:textColor="@color/text_on_dark"
+                android:letterSpacing="0.02" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/captureGoodPostureButton"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:text="✓ 건강한 자세"
+                android:textSize="12sp"
                 android:textColor="@color/white"
-                android:layout_marginTop="8dp" />
+                android:layout_marginTop="8dp"
+                app:cornerRadius="10dp"
+                app:backgroundTint="@color/accent_green"
+                app:rippleColor="@color/ripple_dark" />
 
             <TextView
-                android:id="@+id/distanceDescription"
+                android:id="@+id/goodPostureStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="카메라에 얼굴을 비춰주세요"
-                android:textSize="14sp"
+                android:text="바른 자세로 측정"
+                android:textSize="9sp"
+                android:textColor="@color/text_on_dark_secondary"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="2dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/captureBadPostureButton"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:text="⚠ 스트레스 자세"
+                android:textSize="12sp"
                 android:textColor="@color/white"
-                android:alpha="0.7"
-                android:layout_marginTop="4dp" />
+                android:layout_marginTop="8dp"
+                app:cornerRadius="10dp"
+                app:backgroundTint="@color/accent_orange"
+                app:rippleColor="@color/ripple_dark" />
+
+            <TextView
+                android:id="@+id/badPostureStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="불편한 자세로 측정"
+                android:textSize="9sp"
+                android:textColor="@color/text_on_dark_secondary"
+                android:layout_marginTop="4dp"
+                android:layout_marginStart="2dp" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:background="@color/white"
+                android:background="@color/text_on_dark_secondary"
                 android:alpha="0.2"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="16dp" />
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp" />
 
-            <TextView
-                android:id="@+id/tiltAngleLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="기울기 각도"
-                android:textSize="16sp"
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/completeButton"
+                android:layout_width="match_parent"
+                android:layout_height="38dp"
+                android:text="설정 완료"
+                android:textSize="12sp"
                 android:textColor="@color/white"
-                android:alpha="0.8" />
-
-            <TextView
-                android:id="@+id/tiltAngleText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="--°"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:layout_marginTop="8dp" />
+                android:enabled="false"
+                app:cornerRadius="10dp"
+                app:backgroundTint="@color/accent_blue"
+                app:rippleColor="@color/ripple_dark" />
 
         </LinearLayout>
 
