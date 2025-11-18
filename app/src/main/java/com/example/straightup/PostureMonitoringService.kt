@@ -23,6 +23,7 @@ import android.widget.Toast
 import android.view.WindowManager
 import android.view.Surface
 import kotlin.text.compareTo
+import com.example.straightup.ReminderLevel
 
 class PostureMonitoringService : LifecycleService() {
 
@@ -118,9 +119,36 @@ class PostureMonitoringService : LifecycleService() {
         updatePostureScore(faceDistance, tiltAngle)
     }
 
-    private suspend fun captureSingleFaceDistance(): Float? =
+    private suspend fun captureSingleFaceDistance(): Float? {
+        var attemptCount = 0
+        val maxAttempts = 5
+        val retryDelayMs = 500L
+
+        while (attemptCount < maxAttempts) {
+            attemptCount++
+            Log.d("PostureService", "Face detection attempt $attemptCount/$maxAttempts")
+
+            val result = captureSingleFaceDistanceAttempt()
+            if (result != null) {
+                Log.d("PostureService", "Face detected successfully on attempt $attemptCount")
+                return result
+            }
+
+            if (attemptCount < maxAttempts) {
+                Log.d("PostureService", "No face detected, retrying in ${retryDelayMs}ms...")
+                delay(retryDelayMs)
+            }
+        }
+
+        Log.w("PostureService", "Failed to detect face after $maxAttempts attempts, returning null")
+        return null
+    }
+
+    private suspend fun captureSingleFaceDistanceAttempt(): Float? =
         suspendCancellableCoroutine { cont ->
             val cameraProviderFuture = ProcessCameraProvider.getInstance(this)
+            val timeoutMs = 3000L
+            var hasResumed = false
 
             cameraProviderFuture.addListener({
                 val cameraProvider = cameraProviderFuture.get()
@@ -131,12 +159,31 @@ class PostureMonitoringService : LifecycleService() {
 
                 /* [TODO][Hojoon] FaceDistanceAnalyzer 구현 제대로 되어 있는지 확인 및 수정. */
                 /* 이거 구현할 때 만약에 넘긴 사진에 얼굴이 없으면 무한 대기가 걸릴거거든? 그래서 재촬영을 한다거나 default distance를 설정한다거나 그런 에러 핸들링 로직도 같이 구현 부탁쓰 */
+                /* 11.13 구현 완료. 인식 안 될 시 5번까지 재시도, 여전히 인식 안 될 시 null 반환. null은 점수 계산 로직에서 따로 분기 처리 */
                 val analyzer = FaceDistanceAnalyzer { distance ->
-                    if (cont.isActive) cont.resume(distance)
-                    cameraProvider.unbindAll()
+                    synchronized(this) {
+                        if (cont.isActive && !hasResumed) {
+                            hasResumed = true
+                            cont.resume(distance)
+                            cameraProvider.unbindAll()
+                        }
+                    }
                 }
 
                 imageAnalysis.setAnalyzer(cameraExecutor, analyzer)
+
+                // Timeout handler - if no face detected within timeoutMs, resume with null
+                monitoringScope.launch {
+                    delay(timeoutMs)
+                    synchronized(this@PostureMonitoringService) {
+                        if (cont.isActive && !hasResumed) {
+                            hasResumed = true
+                            Log.d("PostureService", "Face detection timeout after ${timeoutMs}ms")
+                            cont.resume(null)
+                            cameraProvider.unbindAll()
+                        }
+                    }
+                }
 
                 try {
                     cameraProvider.bindToLifecycle(
@@ -146,7 +193,12 @@ class PostureMonitoringService : LifecycleService() {
                     )
                 } catch (e: Exception) {
                     Log.e("PostureService", "Camera binding failed", e)
-                    if (cont.isActive) cont.resume(null)
+                    synchronized(this) {
+                        if (cont.isActive && !hasResumed) {
+                            hasResumed = true
+                            cont.resume(null)
+                        }
+                    }
                 }
             }, ContextCompat.getMainExecutor(this))
         }
@@ -162,27 +214,34 @@ class PostureMonitoringService : LifecycleService() {
         }
 
     /* [TODO][Hojoon] PostureScoreCalculator 구현 제대로 되어 있는지 확인 및 수정. */
+    /* 11.13 구현 완료 */
     private fun updatePostureScore(faceDistance: Float?, tiltAngle: Float?) {
-        if (faceDistance == null || tiltAngle == null) {
-            Log.w("PostureService", "Incomplete data for posture score")
-            return
+        // Calculate score even with partial or null data
+        val score = PostureScoreCalculator.calculatePostureScore(this, tiltAngle, faceDistance)
+        Log.d("PostureService", "Posture Score: $score (tilt: $tiltAngle, distance: $faceDistance)")
+
+        val reminderLevel = PostureScoreCalculator.getReminderLevel(score)
+        val feedback = PostureScoreCalculator.getFeedbackMessage(this, tiltAngle, faceDistance, score)
+
+        Log.d("PostureService", "Reminder Level: $reminderLevel, Feedback: $feedback")
+
+        // Update counters based on score
+        when (reminderLevel) {
+            ReminderLevel.NONE,
+            ReminderLevel.GENTLE -> {
+                // Good posture
+                goodCounter++
+                badCounter = 0
+                Log.d("PostureService", "Good posture count: $goodCounter")
+            }
+            ReminderLevel.MODERATE,
+            ReminderLevel.STRONG -> {
+                // Bad posture
+                badCounter++
+                goodCounter = 0
+                Log.d("PostureService", "Bad posture count: $badCounter")
+            }
         }
-//        val score = PostureScoreCalculator.getReminderLevel(faceDistance, tiltAngle)
-//        Log.d("PostureService", "Posture Score: $score")
-          /* [TODO][Hojoon] score에 따라 goodCounter와 badCounter 값을 변경 하는 어떤 로직. */
-//        when (score) {
-//            PostureScoreCalculator.ReminderLevel.GOOD -> {
-//                goodCounter++
-//                badCounter = 0
-//            }
-//            PostureScoreCalculator.ReminderLevel.BAD -> {
-//                badCounter++
-//                goodCounter = 0
-//            }
-//            PostureScoreCalculator.ReminderLevel.NEUTRAL -> {
-//                // Neutral state, do not change counters
-//            }
-//        }
     }
 
     /* [TODO][Seungjun] Implement hierarchical reminder based on 'badCounter' */

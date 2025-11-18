@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun setupUI() {
-        binding.toggleButton.setOnClickListener {
+        binding.toggleButtonFrame.setOnClickListener {
             if (isMonitoring) {
                 stopMonitoring()
             } else {
@@ -106,19 +106,31 @@ class MainActivity : AppCompatActivity() {
     
     private fun updateUI() {
         if (isMonitoring) {
-            binding.toggleButton.text = "ON"
-            binding.toggleButton.backgroundTintList = 
-                ContextCompat.getColorStateList(this, R.color.button_on)
-            binding.toggleButton.strokeColor = 
-                ContextCompat.getColorStateList(this, R.color.button_stroke_on)
+            binding.toggleButtonBackground.setImageResource(R.drawable.button_toggle_on)
+            binding.toggleButtonText.text = "ON"
+            binding.toggleButtonText.setTextColor(0xFF00FF00.toInt()) // Bright green
             binding.statusText.text = "모니터링 중..."
+            
+            // Add glow animation
+            binding.toggleButtonBackground.animate()
+                .alpha(0.8f)
+                .setDuration(500)
+                .withEndAction {
+                    binding.toggleButtonBackground.animate()
+                        .alpha(1.0f)
+                        .setDuration(500)
+                        .start()
+                }
+                .start()
         } else {
-            binding.toggleButton.text = "OFF"
-            binding.toggleButton.backgroundTintList = 
-                ContextCompat.getColorStateList(this, R.color.button_off)
-            binding.toggleButton.strokeColor = 
-                ContextCompat.getColorStateList(this, R.color.button_stroke)
+            binding.toggleButtonBackground.setImageResource(R.drawable.button_toggle_off)
+            binding.toggleButtonText.text = "OFF"
+            binding.toggleButtonText.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
             binding.statusText.text = "모니터링이 꺼져있습니다"
+            
+            // Reset animation
+            binding.toggleButtonBackground.clearAnimation()
+            binding.toggleButtonBackground.alpha = 1.0f
         }
     }
     
