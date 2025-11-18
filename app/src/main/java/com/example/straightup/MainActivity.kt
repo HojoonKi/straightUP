@@ -15,6 +15,8 @@ import androidx.core.content.ContextCompat
 import com.example.straightup.databinding.ActivityMainBinding
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import android.app.NotificationManager
+import kotlin.text.compareTo
 
 class MainActivity : AppCompatActivity() {
     
@@ -39,7 +41,6 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
 //        checkBatteryOptimization()
         setupUI()
 //        observePostureScore()
@@ -160,6 +161,41 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkPermissionsAndStart() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            if (!Settings.canDrawOverlays(this)) {
+                androidx.appcompat.app.AlertDialog.Builder(this)
+                    .setTitle("다른 앱 위에 표시 권한 필요")
+                    .setMessage("다른 앱 사용 중에도 자세 알림을 표시하려면 권한이 필요합니다.")
+                    .setPositiveButton("설정으로 이동") { _, _ ->
+                        val intent = Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION)
+                        intent.data = Uri.parse("package:$packageName")
+                        startActivity(intent)
+                    }
+                    .setNegativeButton("나중에", null)
+                    .show()
+                return
+            }
+        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+//            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
+//            val canUse = notificationManager.canUseFullScreenIntent()
+//
+//            // 디버그 로그 추가
+//            android.util.Log.d("MainActivity", "canUseFullScreenIntent: $canUse")
+//
+//            if (!canUse) {
+//                androidx.appcompat.app.AlertDialog.Builder(this)
+//                    .setTitle("전체 화면 알림 권한 필요")
+//                    .setMessage("자세 알림을 즉시 표시하기 위해 전체 화면 알림 권한이 필요합니다.\n\n설정에서 권한을 허용해주세요.")
+//                    .setPositiveButton("설정으로 이동") { _, _ ->
+//                        val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
+//                        intent.data = Uri.parse("package:$packageName")
+//                        startActivity(intent)
+//                    }
+//                    .setNegativeButton("나중에", null)
+//                    .show()
+//            }
+//        }
         checkCameraPermission { startMonitoring() }
     }
 

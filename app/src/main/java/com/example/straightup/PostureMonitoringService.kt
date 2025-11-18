@@ -20,10 +20,6 @@ import kotlin.coroutines.resume
 import android.os.PowerManager
 import android.content.Context
 import android.widget.Toast
-import android.view.WindowManager
-import android.view.Surface
-import kotlin.text.compareTo
-import com.example.straightup.ReminderLevel
 
 class PostureMonitoringService : LifecycleService() {
 
@@ -36,9 +32,17 @@ class PostureMonitoringService : LifecycleService() {
     private val monitoringJob = Job()
     private val monitoringScope = CoroutineScope(Dispatchers.Default + monitoringJob)
     private var isChannelCreated = false
+
+    // TCP Tahoe policy variables for adaptive interval
+    private var currentDelay = INITIAL_DELAY_MS
+    private val maxDelay = 60000L // 1 min max
+
     companion object {
         private const val CHANNEL_ID = "posture_monitoring_channel"
         private const val NOTIFICATION_ID = 1
+        private const val INITIAL_DELAY_MS = 5000L // 5 seconds
+        private const val GOOD_THRESHOLD = 3 // goodCounter threshold to increase delay
+        private const val INCREASE_FACTOR = 2.0 // multiplicative increase factor
     }
     
     override fun onCreate() {
@@ -92,11 +96,18 @@ class PostureMonitoringService : LifecycleService() {
                 try {
                     val powerManager = getSystemService(Context.POWER_SERVICE) as PowerManager
                     if (!powerManager.isInteractive) {
-                        Log.d("PostureService", "Screen off - skipping monitoring")
+                        Log.d("PostureService", "Screen off - skipping monitoring and resetting delay")
+                        resetDelay() // Reset delay when screen turns off
                         delay(calculateDelayToNextInterval())
                     } else {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(this@PostureMonitoringService, "(debug) 측정중..", Toast.LENGTH_SHORT).show()
+                        }
                         startSingleFrameMonitoring()
                         notification()
+                        while (OverlayServiceStrong.isShowing) {
+                            delay(100)
+                        }
                     }
                 } catch (e: CancellationException) {
                     Log.d("PostureService", "Monitoring cancelled")
@@ -157,7 +168,7 @@ class PostureMonitoringService : LifecycleService() {
                     .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
                     .build()
 
-                /* [TODO][Hojoon] FaceDistanceAnalyzer 구현 제대로 되어 있는지 확인 및 수정. */
+                /* [Hojoon] FaceDistanceAnalyzer 구현 제대로 되어 있는지 확인 및 수정. */
                 /* 이거 구현할 때 만약에 넘긴 사진에 얼굴이 없으면 무한 대기가 걸릴거거든? 그래서 재촬영을 한다거나 default distance를 설정한다거나 그런 에러 핸들링 로직도 같이 구현 부탁쓰 */
                 /* 11.13 구현 완료. 인식 안 될 시 5번까지 재시도, 여전히 인식 안 될 시 null 반환. null은 점수 계산 로직에서 따로 분기 처리 */
                 val analyzer = FaceDistanceAnalyzer { distance ->
@@ -175,11 +186,19 @@ class PostureMonitoringService : LifecycleService() {
                 // Timeout handler - if no face detected within timeoutMs, resume with null
                 monitoringScope.launch {
                     delay(timeoutMs)
-                    synchronized(this@PostureMonitoringService) {
+                    val shouldUnbind = synchronized(this@PostureMonitoringService) {
                         if (cont.isActive && !hasResumed) {
                             hasResumed = true
                             Log.d("PostureService", "Face detection timeout after ${timeoutMs}ms")
                             cont.resume(null)
+                            true
+                        } else {
+                            false
+                        }
+                    }
+
+                    if (shouldUnbind) {
+                        withContext(Dispatchers.Main) {
                             cameraProvider.unbindAll()
                         }
                     }
@@ -203,7 +222,8 @@ class PostureMonitoringService : LifecycleService() {
             }, ContextCompat.getMainExecutor(this))
         }
 
-    /* [TODO][Seungjun] TiltSensorMonitor 구현 제대로 되어 있는지 확인 및 수정. */
+    /* [Seungjun] TiltSensorMonitor 구현 제대로 되어 있는지 확인 및 수정. */
+    /* 11.19 구현 완료 : 가로/세로 모두 지원 */
     private suspend fun captureSingleTiltAngle(): Float? =
         suspendCancellableCoroutine { cont ->
             tiltSensorMonitor = TiltSensorMonitor(this) { tiltAngle ->
@@ -213,7 +233,7 @@ class PostureMonitoringService : LifecycleService() {
             tiltSensorMonitor?.start()
         }
 
-    /* [TODO][Hojoon] PostureScoreCalculator 구현 제대로 되어 있는지 확인 및 수정. */
+    /* [Hojoon] PostureScoreCalculator 구현 제대로 되어 있는지 확인 및 수정. */
     /* 11.13 구현 완료 */
     private fun updatePostureScore(faceDistance: Float?, tiltAngle: Float?) {
         // Calculate score even with partial or null data
@@ -236,30 +256,49 @@ class PostureMonitoringService : LifecycleService() {
             }
             ReminderLevel.MODERATE,
             ReminderLevel.STRONG -> {
-                // Bad posture
+                // Bad posture - reset delay (TCP Tahoe policy)
                 badCounter++
                 goodCounter = 0
-                Log.d("PostureService", "Bad posture count: $badCounter")
+                resetDelay()
+                Log.d("PostureService", "Bad posture count: $badCounter, delay reset to ${currentDelay}ms")
             }
         }
     }
 
-    /* [TODO][Seungjun] Implement hierarchical reminder based on 'badCounter' */
-    private fun notification() {
-        /* [TODO][Seungjun] PostureNotificationHelper 구현 제대로 되어 있는지 확인 및 수정. */
-//        notificationHelper?.handleReminder(badCounter)
+    private suspend fun notification() {
+        /* [Seungjun] PostureNotificationHelper 구현 제대로 되어 있는지 확인 및 수정. */
+        /* 11.19 구현 완료 */
+        notificationHelper?.handleReminder(badCounter)
     }
 
-    /* [TODO][Seungjun] Implement an adaptive interval calculator based on 'goodCounter' with using TCP Tahoe policy */
+
     private fun calculateDelayToNextInterval(): Long {
-//        return 300000L
-        return 10000L
+        /* [TODO] energy profile 가능할듯? 그냥 간단하게 5초 지정하고 돌리면 될듯! */
+
+        /* TCP Tahoe policy implementation:
+           1. 화면 꺼지면 딜레이 초기화 (resetDelay 호출됨)
+           2. goodCounter가 GOOD_THRESHOLD 이상 쌓이면 딜레이 증가 (multiplicative increase)
+           3. badCounter가 한번이라도 쌓이면 딜레이 초기화 (resetDelay 호출됨)
+           4. 초기 딜레이는 5초
+         */
+
+        // If goodCounter reaches threshold, increase delay multiplicatively
+        if (goodCounter >= GOOD_THRESHOLD) {
+            currentDelay = (currentDelay * INCREASE_FACTOR).toLong().coerceAtMost(maxDelay)
+            Log.d("PostureService", "Delay increased to ${currentDelay}ms due to good posture")
+        }
+
+        return currentDelay
+    }
+
+    private fun resetDelay() {
+        currentDelay = INITIAL_DELAY_MS
+        Log.d("PostureService", "Delay reset to ${currentDelay}ms")
     }
 
     override fun onDestroy() {
         super.onDestroy()
         Log.d("PostureService", "Service destroyed")
-
         monitoringJob.cancel()
 
         tiltSensorMonitor?.stop()

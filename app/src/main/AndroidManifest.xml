@@ -11,6 +11,8 @@
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.USE_FULL_SCREEN_INTENT" />
 
     <application
         android:allowBackup="true"
@@ -37,12 +39,30 @@
             android:name=".CameraPreviewActivity"
             android:exported="false"
             android:screenOrientation="portrait" />
-        
+
+        <activity
+            android:name=".OverlayActivity"
+            android:exported="true"
+            android:theme="@style/Theme.SemiTransparent"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTask" />
+
         <service
             android:name=".PostureMonitoringService"
             android:enabled="true"
             android:exported="false"
             android:foregroundServiceType="camera" />
+
+        <service
+            android:name=".OverlayServiceModerate"
+            android:enabled="true"
+            android:exported="false" />
+
+        <service
+            android:name=".OverlayServiceStrong"
+            android:enabled="true"
+            android:exported="false" />
+
     </application>
 
 </manifest>
