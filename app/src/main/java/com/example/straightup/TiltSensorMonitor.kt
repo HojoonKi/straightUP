@@ -8,6 +8,7 @@ import android.hardware.SensorManager
 import android.util.Log
 import kotlin.math.atan2
 import kotlin.math.sqrt
+import kotlin.math.abs
 
 class TiltSensorMonitor(
     context: Context,

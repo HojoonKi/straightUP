@@ -19,6 +19,10 @@ import java.util.concurrent.Executors
 import kotlin.coroutines.resume
 import android.os.PowerManager
 import android.content.Context
+import android.widget.Toast
+import android.view.WindowManager
+import android.view.Surface
+import kotlin.text.compareTo
 
 class PostureMonitoringService : LifecycleService() {
 
@@ -189,7 +193,8 @@ class PostureMonitoringService : LifecycleService() {
 
     /* [TODO][Seungjun] Implement an adaptive interval calculator based on 'goodCounter' with using TCP Tahoe policy */
     private fun calculateDelayToNextInterval(): Long {
-        return 300000L
+//        return 300000L
+        return 10000L
     }
 
     override fun onDestroy() {
