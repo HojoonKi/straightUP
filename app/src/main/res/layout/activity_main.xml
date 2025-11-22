@@ -77,56 +77,13 @@
         app:layout_constraintEnd_toEndOf="parent"
         android:layout_marginTop="40dp" />
 
-    <androidx.cardview.widget.CardView
-        android:id="@+id/statsCard"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_margin="24dp"
-        app:cardCornerRadius="16dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="@color/card_background"
-        app:layout_constraintTop_toBottomOf="@id/statusText"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginTop="32dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp">
-
-            <TextView
-                android:id="@+id/postureScoreLabel"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="현재 자세 점수"
-                android:textSize="13sp"
-                android:textColor="@color/text_secondary"
-                android:letterSpacing="0.03" />
-
-            <TextView
-                android:id="@+id/postureScoreText"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="-- / 100"
-                android:textSize="36sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginTop="8dp" />
-
-        </LinearLayout>
-
-    </androidx.cardview.widget.CardView>
-
     <com.google.android.material.button.MaterialButton
         android:id="@+id/cameraPreviewButton"
         android:layout_width="0dp"
         android:layout_height="56dp"
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="32dp"
+        android:layout_marginTop="32dp"
         android:text="초기 설정 시작"
         android:textSize="16sp"
         android:textColor="@color/text_primary"
@@ -135,7 +92,28 @@
         app:strokeColor="@color/card_border"
         app:backgroundTint="@color/card_background"
         app:rippleColor="@color/ripple_light"
-        app:layout_constraintTop_toBottomOf="@id/statsCard"
+        app:layout_constraintTop_toBottomOf="@id/statusText"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        style="@style/Widget.Material3.Button.OutlinedButton" />
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/dataCollectionButton"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:layout_marginStart="24dp"
+        android:layout_marginEnd="24dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="32dp"
+        android:text="📊 데이터 수집 시작"
+        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        app:cornerRadius="12dp"
+        app:strokeWidth="1dp"
+        app:strokeColor="@color/card_border"
+        app:backgroundTint="@color/card_background"
+        app:rippleColor="@color/ripple_light"
+        app:layout_constraintTop_toBottomOf="@id/cameraPreviewButton"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         style="@style/Widget.Material3.Button.OutlinedButton" />

@@ -57,8 +57,31 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
         sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
         accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
         
+        loadSavedCalibration()
         setupUI()
         startCamera()
+    }
+    
+    private fun loadSavedCalibration() {
+        val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        
+        if (prefs.contains(KEY_GOOD_DISTANCE)) {
+            goodPostureDistance = prefs.getFloat(KEY_GOOD_DISTANCE, 0f)
+            goodPostureTilt = prefs.getFloat(KEY_GOOD_TILT, 0f)
+            
+            binding.goodPostureStatus.text = "저장된 값: 거리 ${String.format("%.2f", goodPostureDistance)}, 기울기 ${goodPostureTilt?.toInt()}°"
+            binding.goodPostureStatus.setTextColor(getColor(R.color.accent_green))
+        }
+        
+        if (prefs.contains(KEY_BAD_DISTANCE)) {
+            badPostureDistance = prefs.getFloat(KEY_BAD_DISTANCE, 0f)
+            badPostureTilt = prefs.getFloat(KEY_BAD_TILT, 0f)
+            
+            binding.badPostureStatus.text = "저장된 값: 거리 ${String.format("%.2f", badPostureDistance)}, 기울기 ${badPostureTilt?.toInt()}°"
+            binding.badPostureStatus.setTextColor(getColor(R.color.accent_orange))
+        }
+        
+        checkCalibrationComplete()
     }
     
     private fun setupUI() {
@@ -89,6 +112,7 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
         goodPostureTilt = currentTiltAngle
         
         binding.goodPostureStatus.text = "✓ 저장됨: 거리 ${String.format("%.2f", currentDistance)}, 기울기 ${currentTiltAngle.toInt()}°"
+        binding.goodPostureStatus.setTextColor(getColor(R.color.accent_green))
         binding.goodPostureStatus.alpha = 1.0f
         
         Toast.makeText(this, "건강한 자세가 저장되었습니다", Toast.LENGTH_SHORT).show()
@@ -105,6 +129,7 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
         badPostureTilt = currentTiltAngle
         
         binding.badPostureStatus.text = "✓ 저장됨: 거리 ${String.format("%.2f", currentDistance)}, 기울기 ${currentTiltAngle.toInt()}°"
+        binding.badPostureStatus.setTextColor(getColor(R.color.accent_orange))
         binding.badPostureStatus.alpha = 1.0f
         
         Toast.makeText(this, "스트레스 자세가 저장되었습니다", Toast.LENGTH_SHORT).show()

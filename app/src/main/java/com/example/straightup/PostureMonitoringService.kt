@@ -245,6 +245,25 @@ class PostureMonitoringService : LifecycleService() {
 
         Log.d("PostureService", "Reminder Level: $reminderLevel, Feedback: $feedback")
 
+        // Determine if good or bad posture
+        val isGoodPosture = when (reminderLevel) {
+            ReminderLevel.NONE,
+            ReminderLevel.GENTLE -> true
+            ReminderLevel.MODERATE,
+            ReminderLevel.STRONG -> false
+        }
+
+        // Log to data collection if active
+        if (DataCollectionService.isCollecting()) {
+            DataCollectionService.logPostureEvent(
+                timestamp = System.currentTimeMillis(),
+                isGoodPosture = isGoodPosture,
+                score = score,
+                tiltAngle = tiltAngle,
+                faceDistance = faceDistance
+            )
+        }
+
         // Update counters based on score
         when (reminderLevel) {
             ReminderLevel.NONE,
