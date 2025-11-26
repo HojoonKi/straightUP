@@ -19,8 +19,8 @@ object PostureScoreCalculator {
     private const val DEFAULT_BAD_DISTANCE = 0.4f
     
     // Weights for combined score (distance is more important for screen proximity)
-    private const val TILT_WEIGHT = 0.40f
-    private const val DISTANCE_WEIGHT = 0.60f
+    private const val TILT_WEIGHT = 0.50f
+    private const val DISTANCE_WEIGHT = 0.50f
     
     // Margin for "excellent" zone (beyond good posture)
     private const val EXCELLENT_MARGIN = 0.15f

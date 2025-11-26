@@ -100,9 +100,9 @@ class PostureMonitoringService : LifecycleService() {
                         resetDelay() // Reset delay when screen turns off
                         delay(calculateDelayToNextInterval())
                     } else {
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@PostureMonitoringService, "(debug) 측정중..", Toast.LENGTH_SHORT).show()
-                        }
+                        // withContext(Dispatchers.Main) {
+                        //     Toast.makeText(this@PostureMonitoringService, "(debug) 측정중..", Toast.LENGTH_SHORT).show()
+                        // }
                         startSingleFrameMonitoring()
                         notification()
                         while (OverlayServiceStrong.isShowing) {
