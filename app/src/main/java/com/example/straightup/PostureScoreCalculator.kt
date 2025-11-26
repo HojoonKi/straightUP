@@ -18,9 +18,9 @@ object PostureScoreCalculator {
     private const val DEFAULT_BAD_TILT = 30f
     private const val DEFAULT_BAD_DISTANCE = 0.4f
     
-    // Weights for combined score (tilt is more important for neck health)
-    private const val TILT_WEIGHT = 0.65f
-    private const val DISTANCE_WEIGHT = 0.35f
+    // Weights for combined score (distance is more important for screen proximity)
+    private const val TILT_WEIGHT = 0.40f
+    private const val DISTANCE_WEIGHT = 0.60f
     
     // Margin for "excellent" zone (beyond good posture)
     private const val EXCELLENT_MARGIN = 0.15f
@@ -208,7 +208,7 @@ object PostureScoreCalculator {
         return when {
             score >= 85 -> ReminderLevel.NONE      // Excellent posture
             score >= 70 -> ReminderLevel.GENTLE    // Good, minor adjustments
-            score >= 50 -> ReminderLevel.MODERATE  // Needs attention
+            score >= 40 -> ReminderLevel.MODERATE  // Needs attention
             else -> ReminderLevel.STRONG           // Poor posture, immediate correction
         }
     }
