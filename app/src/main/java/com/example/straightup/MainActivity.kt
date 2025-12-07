@@ -198,26 +198,6 @@ class MainActivity : AppCompatActivity() {
                 return
             }
         }
-//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
-//            val notificationManager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
-//            val canUse = notificationManager.canUseFullScreenIntent()
-//
-//            // 디버그 로그 추가
-//            android.util.Log.d("MainActivity", "canUseFullScreenIntent: $canUse")
-//
-//            if (!canUse) {
-//                androidx.appcompat.app.AlertDialog.Builder(this)
-//                    .setTitle("전체 화면 알림 권한 필요")
-//                    .setMessage("자세 알림을 즉시 표시하기 위해 전체 화면 알림 권한이 필요합니다.\n\n설정에서 권한을 허용해주세요.")
-//                    .setPositiveButton("설정으로 이동") { _, _ ->
-//                        val intent = Intent(Settings.ACTION_MANAGE_APP_USE_FULL_SCREEN_INTENT)
-//                        intent.data = Uri.parse("package:$packageName")
-//                        startActivity(intent)
-//                    }
-//                    .setNegativeButton("나중에", null)
-//                    .show()
-//            }
-//        }
         checkCameraPermission { startMonitoring() }
     }
 
@@ -261,14 +241,14 @@ class MainActivity : AppCompatActivity() {
     
     private fun updateDataCollectionUI() {
         if (isCollectingData) {
-            binding.dataCollectionButton.text = "⏸️ 데이터 수집 중지"
+            binding.dataCollectionButton.text = "데이터 수집 중지"
             binding.dataCollectionButton.strokeColor = 
                 ContextCompat.getColorStateList(this, R.color.accent_orange)
             binding.dataCollectionButton.setTextColor(
                 ContextCompat.getColor(this, R.color.accent_orange)
             )
         } else {
-            binding.dataCollectionButton.text = "📊 데이터 수집 시작"
+            binding.dataCollectionButton.text = "데이터 수집 시작"
             binding.dataCollectionButton.strokeColor = 
                 ContextCompat.getColorStateList(this, R.color.card_border)
             binding.dataCollectionButton.setTextColor(

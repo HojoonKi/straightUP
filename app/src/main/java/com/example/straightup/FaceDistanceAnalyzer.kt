@@ -31,14 +31,11 @@ class FaceDistanceAnalyzer(
                     if (faces.isNotEmpty()) {
                         val face = faces[0]
                         // Calculate approximate distance based on face size
-                        // Larger face = closer to camera
                         val faceWidth = face.boundingBox.width()
                         val faceHeight = face.boundingBox.height()
                         val faceSize = (faceWidth + faceHeight) / 2f
                         
                         // Normalize distance (inverse of face size)
-                        // Reference: typical face size at optimal distance is around 200-300 pixels
-                        // Lower reference = higher distance values
                         val referenceSize = 200f
                         val distance = referenceSize / faceSize
                         

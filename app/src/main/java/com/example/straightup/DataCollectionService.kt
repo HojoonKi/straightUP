@@ -17,10 +17,7 @@ object DataCollectionService {
     
     private var isCollecting = false
     private var dataFile: File? = null
-    
-    /**
-     * Start data collection
-     */
+
     fun startCollection(context: Context) {
         if (isCollecting) {
             Log.w(TAG, "Data collection already started")
@@ -37,23 +34,14 @@ object DataCollectionService {
         
         Log.d(TAG, "Data collection started. File: ${dataFile!!.absolutePath}")
     }
-    
-    /**
-     * Stop data collection
-     */
+
     fun stopCollection() {
         isCollecting = false
         Log.d(TAG, "Data collection stopped")
     }
-    
-    /**
-     * Check if currently collecting data
-     */
+
     fun isCollecting(): Boolean = isCollecting
-    
-    /**
-     * Log a posture event
-     */
+
     fun logPostureEvent(
         timestamp: Long = System.currentTimeMillis(),
         isGoodPosture: Boolean,
@@ -81,17 +69,11 @@ object DataCollectionService {
             Log.e(TAG, "Failed to log posture event", e)
         }
     }
-    
-    /**
-     * Get data file
-     */
+
     private fun getDataFile(context: Context): File {
         return File(context.filesDir, FILE_NAME)
     }
-    
-    /**
-     * Create file with CSV header
-     */
+
     private fun createFileWithHeader() {
         try {
             FileWriter(dataFile).use { writer ->
@@ -102,17 +84,11 @@ object DataCollectionService {
             Log.e(TAG, "Failed to create file with header", e)
         }
     }
-    
-    /**
-     * Get file path for external access
-     */
+
     fun getDataFilePath(context: Context): String? {
         return getDataFile(context).absolutePath
     }
-    
-    /**
-     * Get collected data summary
-     */
+
     fun getDataSummary(context: Context): DataSummary? {
         val file = getDataFile(context)
         if (!file.exists()) {
@@ -143,10 +119,7 @@ object DataCollectionService {
             return null
         }
     }
-    
-    /**
-     * Export data file to Downloads folder
-     */
+
     fun exportToDownloads(context: Context): Boolean {
         val sourceFile = getDataFile(context)
         if (!sourceFile.exists()) {
@@ -191,10 +164,7 @@ object DataCollectionService {
             false
         }
     }
-    
-    /**
-     * Get URI for sharing the data file
-     */
+
     fun getShareUri(context: Context): android.net.Uri? {
         val file = getDataFile(context)
         if (!file.exists()) {

@@ -57,7 +57,6 @@ class OverlayServiceStrong : Service() {
 
         windowManager?.addView(overlayView, params)
 
-        // WindowManager params의 alpha를 점진적으로 증가
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val startTime = System.currentTimeMillis()
         val duration = 500L
@@ -91,7 +90,6 @@ class OverlayServiceStrong : Service() {
         val view = overlayView ?: return
         val layoutParams = params ?: return
 
-        // WindowManager params의 alpha를 점진적으로 감소
         val handler = android.os.Handler(android.os.Looper.getMainLooper())
         val startTime = System.currentTimeMillis()
         val duration = 300L

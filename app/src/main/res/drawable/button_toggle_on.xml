@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Outer glow effect -->
     <item>
         <shape android:shape="oval">
             <gradient
@@ -11,24 +10,21 @@
             <size android:width="200dp" android:height="200dp" />
         </shape>
     </item>
-    
-    <!-- Outer shadow/ring -->
+
     <item>
         <shape android:shape="oval">
             <solid android:color="#2A2A2A" />
             <size android:width="200dp" android:height="200dp" />
         </shape>
     </item>
-    
-    <!-- Inner glowing ring -->
+
     <item android:top="8dp" android:bottom="8dp" android:left="8dp" android:right="8dp">
         <shape android:shape="oval">
             <solid android:color="#1A1A1A" />
             <stroke android:width="4dp" android:color="#00FF00" />
         </shape>
     </item>
-    
-    <!-- Button face - stays dark -->
+
     <item android:top="16dp" android:bottom="16dp" android:left="16dp" android:right="16dp">
         <shape android:shape="oval">
             <gradient

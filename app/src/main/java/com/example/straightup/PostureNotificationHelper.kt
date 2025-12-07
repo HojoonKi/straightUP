@@ -15,9 +15,7 @@ import android.widget.Toast
 import kotlin.or
 import kotlin.text.compareTo
 
-/**
- * Hierarchical reminder system with adaptive intervals
- */
+// Hierarchical reminder system
 class PostureNotificationHelper(private val context: Context) {
     
     private val notificationManager = context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager

@@ -42,7 +42,7 @@ class PostureMonitoringService : LifecycleService() {
         private const val NOTIFICATION_ID = 1
         private const val INITIAL_DELAY_MS = 5000L // 5 seconds
         private const val GOOD_THRESHOLD = 3 // goodCounter threshold to increase delay
-        private const val INCREASE_FACTOR = 2.0 // multiplicative increase factor
+        private const val INCREASE_FACTOR = 2.0 //increase factor
     }
     
     override fun onCreate() {
@@ -100,9 +100,6 @@ class PostureMonitoringService : LifecycleService() {
                         resetDelay() // Reset delay when screen turns off
                         delay(calculateDelayToNextInterval())
                     } else {
-                        // withContext(Dispatchers.Main) {
-                        //     Toast.makeText(this@PostureMonitoringService, "(debug) 측정중..", Toast.LENGTH_SHORT).show()
-                        // }
                         startSingleFrameMonitoring()
                         notification()
                         while (OverlayServiceStrong.isShowing) {
@@ -169,7 +166,6 @@ class PostureMonitoringService : LifecycleService() {
                     .build()
 
                 /* [Hojoon] FaceDistanceAnalyzer 구현 제대로 되어 있는지 확인 및 수정. */
-                /* 이거 구현할 때 만약에 넘긴 사진에 얼굴이 없으면 무한 대기가 걸릴거거든? 그래서 재촬영을 한다거나 default distance를 설정한다거나 그런 에러 핸들링 로직도 같이 구현 부탁쓰 */
                 /* 11.13 구현 완료. 인식 안 될 시 5번까지 재시도, 여전히 인식 안 될 시 null 반환. null은 점수 계산 로직에서 따로 분기 처리 */
                 val analyzer = FaceDistanceAnalyzer { distance ->
                     synchronized(this) {
@@ -183,7 +179,7 @@ class PostureMonitoringService : LifecycleService() {
 
                 imageAnalysis.setAnalyzer(cameraExecutor, analyzer)
 
-                // Timeout handler - if no face detected within timeoutMs, resume with null
+                // Timeout handler
                 monitoringScope.launch {
                     delay(timeoutMs)
                     val shouldUnbind = synchronized(this@PostureMonitoringService) {
@@ -263,7 +259,6 @@ class PostureMonitoringService : LifecycleService() {
                 faceDistance = faceDistance
             )
         }
-
         // Update counters based on score
         when (reminderLevel) {
             ReminderLevel.NONE,
@@ -300,8 +295,6 @@ class PostureMonitoringService : LifecycleService() {
            3. badCounter가 한번이라도 쌓이면 딜레이 초기화 (resetDelay 호출됨)
            4. 초기 딜레이는 5초
          */
-
-        // If goodCounter reaches threshold, increase delay multiplicatively
         if (goodCounter >= GOOD_THRESHOLD) {
             currentDelay = (currentDelay * INCREASE_FACTOR).toLong().coerceAtMost(maxDelay)
             Log.d("PostureService", "Delay increased to ${currentDelay}ms due to good posture")

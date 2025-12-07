@@ -61,11 +61,10 @@ class OverlayServiceModerate : Service() {
                         try {
                             overlayView?.let { windowManager?.removeView(it) }
                         } catch (e: Exception) {
-                            // 무시
+                            // ignore
                         }
                         overlayView = null
 
-                        // 뷰 제거 후 바로 서비스 종료
                         stopSelf()
                     }
                 }
@@ -77,7 +76,7 @@ class OverlayServiceModerate : Service() {
         try {
             overlayView?.let { windowManager?.removeView(it) }
         } catch (e: Exception) {
-            // 무시
+            // ignore
         }
         overlayView = null
         windowManager = null
