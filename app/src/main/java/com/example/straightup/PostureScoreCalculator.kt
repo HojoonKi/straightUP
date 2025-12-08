@@ -85,7 +85,11 @@ object PostureScoreCalculator {
             }
         }
     }
-
+    
+    
+    /**
+     * Calculate tilt score (0.0-1.0) based on personalized baseline
+     */
     private fun calculateTiltScore(tiltAngle: Float, baseline: PostureBaseline): Float {
         return when {
             tiltAngle >= baseline.goodTilt * (1 + EXCELLENT_MARGIN) -> 1.0f
@@ -180,7 +184,7 @@ object PostureScoreCalculator {
         if (faceDistance == null) {
             return when {
                 tiltAngle == null -> "측정 데이터가 부족합니다"
-                tiltAngle >= baseline.goodTilt * 0.9f -> "괜찮은 자세입니다 ✓"
+                tiltAngle >= baseline.goodTilt * 0.9f -> "괜찮은 자세입니다"
                 tiltAngle >= baseline.badTilt -> "목 각도를 조금 더 세워주세요"
                 else -> "고개를 많이 숙이셨습니다! 목을 세워주세요"
             }
@@ -189,16 +193,16 @@ object PostureScoreCalculator {
         // Tilt not available case
         if (tiltAngle == null) {
             return when {
-                score >= 85 -> "완벽한 거리입니다"
-                score >= 70 -> "적절한 거리입니다"
+                score >= 85 -> "완벽한 거리입니다! 👍"
+                score >= 70 -> "적절한 거리입니다 ✓"
                 else -> if (faceDistance < baseline.goodDistance) "휴대폰을 더 멀리 두세요" else "휴대폰을 가까이 두세요"
             }
         }
         
         // Both available case
         return when {
-            score >= 85 -> "완벽한 자세입니다"
-            score >= 70 -> "좋은 자세입니다"
+            score >= 85 -> "완벽한 자세입니다! 👍"
+            score >= 70 -> "좋은 자세입니다 ✓"
             tiltAngle < baseline.badTilt && abs(faceDistance - baseline.goodDistance) > abs(baseline.badDistance - baseline.goodDistance) -> 
                 "목 각도와 거리를 모두 조정하세요"
             tiltAngle < baseline.badTilt -> 

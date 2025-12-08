@@ -262,13 +262,13 @@ class PostureMonitoringService : LifecycleService() {
         // Update counters based on score
         when (reminderLevel) {
             ReminderLevel.NONE,
-            ReminderLevel.GENTLE -> {
+            ReminderLevel.GENTLE,
+            ReminderLevel.MODERATE -> {
                 // Good posture
                 goodCounter++
                 badCounter = 0
                 Log.d("PostureService", "Good posture count: $goodCounter")
             }
-            ReminderLevel.MODERATE,
             ReminderLevel.STRONG -> {
                 // Bad posture - reset delay (TCP Tahoe policy)
                 badCounter++
