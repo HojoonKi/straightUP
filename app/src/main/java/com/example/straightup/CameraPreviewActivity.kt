@@ -1,10 +1,6 @@
 package com.example.straightup
 
 import android.content.Context
-import android.hardware.Sensor
-import android.hardware.SensorEvent
-import android.hardware.SensorEventListener
-import android.hardware.SensorManager
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -16,18 +12,12 @@ import androidx.core.content.ContextCompat
 import com.example.straightup.databinding.ActivityCameraPreviewBinding
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import kotlin.math.atan2
-import kotlin.math.sqrt
 
-class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
+class CameraPreviewActivity : AppCompatActivity() {
     
     private lateinit var binding: ActivityCameraPreviewBinding
     private lateinit var cameraExecutor: ExecutorService
-    private lateinit var sensorManager: SensorManager
-    private var accelerometer: Sensor? = null
-    
-    private val gravity = FloatArray(3)
-    private val alpha = 0.8f
+    private lateinit var tiltSensorMonitor: TiltSensorMonitor
     
     private var currentDistance = 0f
     private var currentTiltAngle = 0f
@@ -52,9 +42,14 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
         
         cameraExecutor = Executors.newSingleThreadExecutor()
         
-        // Setup sensor
-        sensorManager = getSystemService(SENSOR_SERVICE) as SensorManager
-        accelerometer = sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER)
+        // Setup TiltSensorMonitor
+        tiltSensorMonitor = TiltSensorMonitor(this) { tiltAngle ->
+            currentTiltAngle = tiltAngle
+            runOnUiThread {
+                binding.tiltAngleText.text = "${tiltAngle.toInt()}°"
+                binding.tiltAngleText.setTextColor(getColor(android.R.color.white))
+            }
+        }
         
         loadSavedCalibration()
         setupUI()
@@ -209,46 +204,17 @@ class CameraPreviewActivity : AppCompatActivity(), SensorEventListener {
     
     override fun onResume() {
         super.onResume()
-        accelerometer?.let {
-            sensorManager.registerListener(this, it, SensorManager.SENSOR_DELAY_UI)
-        }
+        tiltSensorMonitor.start()
     }
     
     override fun onPause() {
         super.onPause()
-        sensorManager.unregisterListener(this)
+        tiltSensorMonitor.stop()
     }
     
     override fun onDestroy() {
         super.onDestroy()
         cameraExecutor.shutdown()
-    }
-    
-    override fun onSensorChanged(event: SensorEvent?) {
-        event?.let {
-            if (it.sensor.type == Sensor.TYPE_ACCELEROMETER) {
-                // Apply low-pass filter
-                gravity[0] = alpha * gravity[0] + (1 - alpha) * it.values[0]
-                gravity[1] = alpha * gravity[1] + (1 - alpha) * it.values[1]
-                gravity[2] = alpha * gravity[2] + (1 - alpha) * it.values[2]
-                
-                // Calculate tilt angle
-                val pitch = Math.toDegrees(
-                    atan2(gravity[1].toDouble(), sqrt(gravity[0] * gravity[0] + gravity[2] * gravity[2].toDouble()))
-                ).toFloat()
-                
-                currentTiltAngle = Math.abs(pitch)
-                
-                runOnUiThread {
-                    binding.tiltAngleText.text = "${currentTiltAngle.toInt()}°"
-                    binding.tiltAngleText.setTextColor(getColor(android.R.color.white))
-                }
-            }
-        }
-    }
-    
-    override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) {
-        // Not needed
     }
 }
 
